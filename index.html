@@ -68,11 +68,11 @@
       <span style="font-size:9px; font-weight:600; letter-spacing:3px; color:#B08D57;">PARTICIPAÇÕES</span>
     </div>
     <div id="nav-links" style="display:flex; gap:44px; font-size:12.5px; font-weight:600; color:#D9D4C8; opacity:0; will-change: opacity;">
-      <div class="apNavLink" data-hover="1" onClick="{{ () => scrollToId('quem-somos') }}" style="cursor:pointer;">Quem Somos</div>
-      <div class="apNavLink" data-hover="1" onClick="{{ () => scrollToId('tese') }}" style="cursor:pointer;">Tese de Investimentos</div>
-      <div class="apNavLink" data-hover="1" onClick="{{ () => scrollToId('contato') }}" style="cursor:pointer;">Contato</div>
+      <div class="apNavLink" data-hover="1" onClick="{{ scrollToQuemSomos }}" style="cursor:pointer;">Quem Somos</div>
+      <div class="apNavLink" data-hover="1" onClick="{{ scrollToTese }}" style="cursor:pointer;">Tese de Investimentos</div>
+      <div class="apNavLink" data-hover="1" onClick="{{ scrollToContato }}" style="cursor:pointer;">Contato</div>
     </div>
-    <div id="nav-btn" data-hover="1" data-magnetic="1" onClick="{{ () => scrollToId('contato') }}" style="background:#B08D57; color:#0B141C; font-size:12px; font-weight:700; padding:11px 24px; border-radius:2px; cursor:pointer; opacity:0; will-change: opacity;">Área Private</div>
+    <div id="nav-btn" data-hover="1" data-magnetic="1" onClick="{{ scrollToContato }}" style="background:#B08D57; color:#0B141C; font-size:12px; font-weight:700; padding:11px 24px; border-radius:2px; cursor:pointer; opacity:0; will-change: opacity;">Área Private</div>
   </div>
 
   <!-- ===================== HERO (v2 — animado, sem foto) ===================== -->
@@ -125,8 +125,8 @@
         <span class="apLine"><span class="apLineInner">Investimentos e participações em oportunidades imobiliárias, de crédito e special situations — com criação de valor de longo prazo.</span></span>
       </div>
       <div ref="{{ heroCtaRef }}" style="display:flex; align-items:center; justify-content:center; gap:24px; margin-top:44px;">
-        <div data-hover="1" data-magnetic="1" onClick="{{ () => scrollToId('tese') }}" style="background:#B08D57; color:#0B141C; font-size:13px; font-weight:700; padding:15px 30px; border-radius:2px; cursor:pointer;">Conheça nossa tese</div>
-        <div data-hover="1" onClick="{{ () => scrollToId('quem-somos') }}" style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:#F4F1EA; cursor:pointer;">
+        <div data-hover="1" data-magnetic="1" onClick="{{ scrollToTese }}" style="background:#B08D57; color:#0B141C; font-size:13px; font-weight:700; padding:15px 30px; border-radius:2px; cursor:pointer;">Conheça nossa tese</div>
+        <div data-hover="1" onClick="{{ scrollToQuemSomos }}" style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:#F4F1EA; cursor:pointer;">
           <span>Quem somos</span>
           <span style="width:26px; height:1px; background:#B08D57;"></span>
         </div>
@@ -594,7 +594,10 @@ class Component extends DCLogic {
       heroImgWrapRef: this.heroImgWrapRef,
       heroImgRef: this.heroImgRef,
       heroChipRef: this.heroChipRef,
-      scrollToId: (id) => this.scrollToId(id)
+      scrollToId: (id) => this.scrollToId(id),
+      scrollToQuemSomos: () => this.scrollToId('quem-somos'),
+      scrollToTese: () => this.scrollToId('tese'),
+      scrollToContato: () => this.scrollToId('contato')
     };
   }
 }

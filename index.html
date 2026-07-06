@@ -519,6 +519,8 @@ class Component extends DCLogic {
 
         tlTransition.to(introOverlay, {
           opacity: 0,
+          display: 'none',
+          pointerEvents: 'none',
           duration: 0.7,
           ease: "power2.out"
         }, "-=0.55");

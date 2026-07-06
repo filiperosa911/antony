@@ -39,9 +39,9 @@
     @keyframes apDotMove { 0%{offset-distance:0%;} 100%{offset-distance:100%;} }
     @keyframes apTwinkle { 0%,100%{opacity:.15; transform:scale(.7);} 50%{opacity:.9; transform:scale(1.1);} }
     @keyframes apRise { from{opacity:0; transform:translateY(60px);} to{opacity:1; transform:translateY(0);} }
-    .apChartPath { stroke-dasharray:2600; stroke-dashoffset:2600; animation:apDraw 3s cubic-bezier(.7,0,.3,1) .5s forwards; }
-    .apChartArea { opacity:0; animation:apRise 1.4s ease 2.4s forwards; }
-    .apEndDot { offset-path:path('M 0 620 C 260 600 380 470 560 500 C 760 534 860 300 1080 330 C 1300 360 1360 150 1560 170 C 1720 186 1820 90 1920 60'); animation:apDotMove 3s cubic-bezier(.7,0,.3,1) .5s forwards; }
+    .apChartPath { stroke-dasharray:2600; stroke-dashoffset:2600; }
+    .apChartArea { opacity:0; }
+    .apEndDot { offset-path:path('M 0 620 C 260 600 380 470 560 500 C 760 534 860 300 1080 330 C 1300 360 1360 150 1560 170 C 1720 186 1820 90 1920 60'); offset-distance: 0%; }
   </style>
 </helmet>
 
@@ -538,6 +538,20 @@ class Component extends DCLogic {
         if (this.heroCtaRef.current) tl.from(this.heroCtaRef.current.children, { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out', stagger: 0.1 }, '-=0.5');
         if (this.heroImgWrapRef.current) tl.from(this.heroImgWrapRef.current, { scale: 0.9, opacity: 0, duration: 1.2, ease: 'expo.out' }, '-=1.0');
         if (this.heroChipRef.current) tl.from(this.heroChipRef.current, { y: 24, opacity: 0, duration: 0.7, ease: 'back.out(1.6)' }, '-=0.4');
+
+        // ---- draw the growth chart line, end dot and area ----
+        gsap.fromTo('.apChartPath', 
+          { strokeDashoffset: 2600 },
+          { strokeDashoffset: 0, duration: 3.0, ease: 'power3.inOut', delay: 0.1 }
+        );
+        gsap.fromTo('.apEndDot', 
+          { offsetDistance: '0%' },
+          { offsetDistance: '100%', duration: 3.0, ease: 'power3.inOut', delay: 0.1 }
+        );
+        gsap.fromTo('.apChartArea', 
+          { opacity: 0, y: 60 },
+          { opacity: 1, y: 0, duration: 1.4, ease: 'power2.out', delay: 1.8 }
+        );
       };
 
       // ---- hero image scroll parallax ----

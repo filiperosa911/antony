@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="./image-slot.js"></script>
+  <style>
+    html { scroll-behavior:auto; }
+    body { margin:0; background:#0B141C; overflow-x:hidden; }
+    ::selection { background:#B08D57; color:#0B141C; }
+    a { color:#B08D57; text-decoration:none; }
+    a:hover { color:#D4B98C; }
+    @media (hover:hover) { .apCursorHost.apCursorActive * { cursor:none !important; } }
+    .apLine { overflow:hidden; display:block; }
+    .apLineInner { display:block; will-change:transform; }
+    .apNavLink { position:relative; }
+    .apNavLink::after { content:''; position:absolute; left:0; right:100%; bottom:-4px; height:1px; background:#B08D57; transition:right .4s cubic-bezier(.4,0,.2,1); }
+    .apNavLink:hover::after { right:0; }
+    .apCard { transition: transform .5s cubic-bezier(.2,.8,.2,1), border-color .5s ease, background .5s ease; }
+    .apCard:hover { transform: translateY(-8px); border-color:#B08D57 !important; background:#152531 !important; }
+    .apFieldLine { transition: border-color .3s ease; }
+    .apFieldLine:focus-within { border-color:#B08D57 !important; }
+    .apGrain { position:absolute; inset:0; pointer-events:none; opacity:.05; mix-blend-mode:overlay;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E"); }
+    @keyframes apAurora { 0%{transform:translate(-8%,-6%) rotate(0deg);} 50%{transform:translate(10%,8%) rotate(12deg);} 100%{transform:translate(-8%,-6%) rotate(0deg);} }
+    @keyframes apFloat { 0%{transform:translateY(0);} 50%{transform:translateY(-18px);} 100%{transform:translateY(0);} }
+    @keyframes apMarquee { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+    .apMarqueeTrack { display:inline-flex; white-space:nowrap; animation:apMarquee 32s linear infinite; }
+    @keyframes apDraw { to { stroke-dashoffset:0; } }
+    @keyframes apDotMove { 0%{offset-distance:0%;} 100%{offset-distance:100%;} }
+    @keyframes apTwinkle { 0%,100%{opacity:.15; transform:scale(.7);} 50%{opacity:.9; transform:scale(1.1);} }
+    @keyframes apRise { from{opacity:0; transform:translateY(60px);} to{opacity:1; transform:translateY(0);} }
+    .apChartPath { stroke-dasharray:2600; stroke-dashoffset:2600; animation:apDraw 3s cubic-bezier(.7,0,.3,1) .5s forwards; }
+    .apChartArea { opacity:0; animation:apRise 1.4s ease 2.4s forwards; }
+    .apEndDot { offset-path:path('M 0 620 C 260 600 380 470 560 500 C 760 534 860 300 1080 330 C 1300 360 1360 150 1560 170 C 1720 186 1820 90 1920 60'); animation:apDotMove 3s cubic-bezier(.7,0,.3,1) .5s forwards; }
+  </style>
+</helmet>
+
+<div class="apCursorHost" ref="{{ rootRef }}" style="position:relative; background:#0B141C; font-family:'Manrope',sans-serif; -webkit-font-smoothing:antialiased;">
+
+  <!-- ===================== INTRO OVERLAY ===================== -->
+  <div id="intro-overlay" style="position:fixed; inset:0; background:#0B141C; z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <div id="intro-logo" style="display:flex; align-items:baseline; gap:22px; transform-origin: center center; will-change: transform;">
+      <span id="intro-text-antony" style="font-family:'Newsreader',serif; font-size:54px; color:#F4F1EA; letter-spacing:1px; white-space:nowrap;"></span>
+      <span id="intro-separator" style="width:2.7px; height:32px; background:#B08D57; display:inline-block; transform: scaleY(0); transform-origin: bottom center; will-change: transform;"></span>
+      <span id="intro-text-part" style="font-size:24.3px; font-weight:600; letter-spacing:6px; color:#B08D57; white-space:nowrap; opacity:0;"></span>
+    </div>
+  </div>
+
+  <!-- custom cursor -->
+  <div ref="{{ cursorDotRef }}" class="cursor-dot" style="position:fixed; top:0; left:0; width:8px; height:8px; margin:-4px 0 0 -4px; background:#B08D57; border-radius:50%; pointer-events:none; z-index:9999; will-change:transform; opacity:0;"></div>
+  <div ref="{{ cursorRingRef }}" class="cursor-ring" style="position:fixed; top:0; left:0; width:38px; height:38px; margin:-19px 0 0 -19px; border:1px solid rgba(176,141,87,0.55); border-radius:50%; pointer-events:none; z-index:9998; will-change:transform; opacity:0;"></div>
+
+  <!-- ===================== NAV ===================== -->
+  <div ref="{{ navRef }}" style="position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:22px 64px; transition:background .4s ease, padding .4s ease, box-shadow .4s ease;">
+    <div id="nav-logo" style="display:flex; align-items:baseline; gap:8px; opacity:0; will-change: opacity;">
+      <span style="font-family:'Newsreader',serif; font-size:20px; color:#F4F1EA; letter-spacing:.5px;">Antony</span>
+      <span style="width:1px; height:12px; background:#B08D57; display:inline-block;"></span>
+      <span style="font-size:9px; font-weight:600; letter-spacing:3px; color:#B08D57;">PARTICIPAÇÕES</span>
+    </div>
+    <div id="nav-links" style="display:flex; gap:44px; font-size:12.5px; font-weight:600; color:#D9D4C8; opacity:0; will-change: opacity;">
+      <div class="apNavLink" data-hover="1" onClick="{{ () => scrollToId('quem-somos') }}" style="cursor:pointer;">Quem Somos</div>
+      <div class="apNavLink" data-hover="1" onClick="{{ () => scrollToId('tese') }}" style="cursor:pointer;">Tese de Investimentos</div>
+      <div class="apNavLink" data-hover="1" onClick="{{ () => scrollToId('contato') }}" style="cursor:pointer;">Contato</div>
+    </div>
+    <div id="nav-btn" data-hover="1" data-magnetic="1" onClick="{{ () => scrollToId('contato') }}" style="background:#B08D57; color:#0B141C; font-size:12px; font-weight:700; padding:11px 24px; border-radius:2px; cursor:pointer; opacity:0; will-change: opacity;">Área Private</div>
+  </div>
+
+  <!-- ===================== HERO (v2 — animado, sem foto) ===================== -->
+  <div data-screen-label="Hero" style="position:relative; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 64px 0; overflow:hidden;">
+
+    <!-- animated aurora background -->
+    <div style="position:absolute; inset:0; overflow:hidden; pointer-events:none;">
+      <div style="position:absolute; top:-30%; left:-10%; width:70%; height:120%; background:radial-gradient(ellipse at center, rgba(176,141,87,0.18), transparent 62%); animation:apAurora 18s ease-in-out infinite; filter:blur(30px);"></div>
+      <div style="position:absolute; bottom:-40%; right:-15%; width:65%; height:120%; background:radial-gradient(ellipse at center, rgba(38,74,96,0.5), transparent 60%); animation:apAurora 22s ease-in-out infinite reverse; filter:blur(30px);"></div>
+    </div>
+
+    <!-- self-drawing growth chart -->
+    <svg viewBox="0 0 1920 760" preserveAspectRatio="xMidYMax slice" style="position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;">
+      <defs>
+        <linearGradient id="apStroke" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stop-color="#8A7550"/>
+          <stop offset="60%" stop-color="#B08D57"/>
+          <stop offset="100%" stop-color="#EFDBB0"/>
+        </linearGradient>
+        <linearGradient id="apFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(176,141,87,0.18)"/>
+          <stop offset="100%" stop-color="rgba(176,141,87,0)"/>
+        </linearGradient>
+      </defs>
+      <path class="apChartArea" d="M 0 620 C 260 600 380 470 560 500 C 760 534 860 300 1080 330 C 1300 360 1360 150 1560 170 C 1720 186 1820 90 1920 60 L 1920 760 L 0 760 Z" fill="url(#apFill)"/>
+      <path class="apChartPath" d="M 0 620 C 260 600 380 470 560 500 C 760 534 860 300 1080 330 C 1300 360 1360 150 1560 170 C 1720 186 1820 90 1920 60" fill="none" stroke="url(#apStroke)" stroke-width="3" stroke-linecap="round"/>
+      <circle class="apEndDot" r="6" fill="#EFDBB0"/>
+    </svg>
+
+    <!-- twinkling particles -->
+    <div style="position:absolute; inset:0; z-index:1; pointer-events:none;">
+      <div style="position:absolute; left:16%; top:30%; width:4px; height:4px; border-radius:50%; background:#B08D57; animation:apTwinkle 4s ease-in-out infinite;"></div>
+      <div style="position:absolute; left:78%; top:22%; width:3px; height:3px; border-radius:50%; background:#D4B98C; animation:apTwinkle 5.5s ease-in-out infinite .8s;"></div>
+      <div style="position:absolute; left:64%; top:60%; width:5px; height:5px; border-radius:50%; background:#B08D57; animation:apTwinkle 6s ease-in-out infinite 1.4s;"></div>
+      <div style="position:absolute; left:30%; top:66%; width:3px; height:3px; border-radius:50%; background:#D4B98C; animation:apTwinkle 4.8s ease-in-out infinite .3s;"></div>
+      <div style="position:absolute; left:88%; top:52%; width:4px; height:4px; border-radius:50%; background:#B08D57; animation:apTwinkle 5s ease-in-out infinite 1.1s;"></div>
+    </div>
+    <div class="apGrain"></div>
+
+    <!-- centered kinetic content -->
+    <div ref="{{ heroTextRef }}" style="position:relative; z-index:3; max-width:1000px;">
+      <div style="font-size:12px; font-weight:700; letter-spacing:5px; color:#B08D57; margin-bottom:30px;">
+        <span class="apLine"><span class="apLineInner">HOLDING MULTI INVESTIMENTOS</span></span>
+      </div>
+      <div style="font-family:'Newsreader',serif; font-size:clamp(44px,6.5vw,104px); line-height:1.02; color:#F4F1EA; letter-spacing:-1px;">
+        <span class="apLine"><span class="apLineInner">Ativos que</span></span>
+        <span class="apLine"><span class="apLineInner"><em style="font-style:italic; color:#B08D57;">geram valor</em>.</span></span>
+      </div>
+      <div style="margin:34px auto 0; max-width:600px; font-size:16px; line-height:1.75; color:#AEA695;">
+        <span class="apLine"><span class="apLineInner">Investimentos e participações em oportunidades imobiliárias, de crédito e special situations — com criação de valor de longo prazo.</span></span>
+      </div>
+      <div ref="{{ heroCtaRef }}" style="display:flex; align-items:center; justify-content:center; gap:24px; margin-top:44px;">
+        <div data-hover="1" data-magnetic="1" onClick="{{ () => scrollToId('tese') }}" style="background:#B08D57; color:#0B141C; font-size:13px; font-weight:700; padding:15px 30px; border-radius:2px; cursor:pointer;">Conheça nossa tese</div>
+        <div data-hover="1" onClick="{{ () => scrollToId('quem-somos') }}" style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:#F4F1EA; cursor:pointer;">
+          <span>Quem somos</span>
+          <span style="width:26px; height:1px; background:#B08D57;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottom marquee ticker -->
+    <div style="position:absolute; left:0; right:0; bottom:0; z-index:3; border-top:1px solid rgba(255,255,255,0.07); padding:16px 0; overflow:hidden; -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent); mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);">
+      <div class="apMarqueeTrack" style="font-family:'Newsreader',serif; font-size:16px; color:#5E6870;">
+        <span style="padding:0 32px;">Direito Creditório</span><span style="color:#B08D57;">✦</span>
+        <span style="padding:0 32px;">Setor Imobiliário</span><span style="color:#B08D57;">✦</span>
+        <span style="padding:0 32px;">Special Situations</span><span style="color:#B08D57;">✦</span>
+        <span style="padding:0 32px;">Hotelaria &amp; Residencial</span><span style="color:#B08D57;">✦</span>
+        <span style="padding:0 32px;">Renda Variável</span><span style="color:#B08D57;">✦</span>
+        <span style="padding:0 32px;">Direito Creditório</span><span style="color:#B08D57;">✦</span>
+        <span style="padding:0 32px;">Setor Imobiliário</span><span style="color:#B08D57;">✦</span>
+        <span style="padding:0 32px;">Special Situations</span><span style="color:#B08D57;">✦</span>
+        <span style="padding:0 32px;">Hotelaria &amp; Residencial</span><span style="color:#B08D57;">✦</span>
+        <span style="padding:0 32px;">Renda Variável</span><span style="color:#B08D57;">✦</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== QUEM SOMOS ===================== -->
+  <div id="quem-somos" data-screen-label="Quem Somos" style="position:relative; background:#F4F1EA; padding:150px 64px; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;">
+    <div>
+      <div class="ap-reveal" style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:18px;">QUEM SOMOS</div>
+      <div class="ap-reveal" style="font-family:'Newsreader',serif; font-size:clamp(28px,3.4vw,44px); color:#12202C; line-height:1.15; margin-bottom:28px;">Uma holding dedicada a transformar potencial em realidade.</div>
+      <div class="ap-reveal" style="font-size:14.5px; line-height:1.8; color:#5B564A; max-width:500px; margin-bottom:16px;">A Antony Participações é uma holding de investimentos e participações dedicada a identificar e fomentar ativos de grande potencial de retorno. Combinamos expertise, visão estratégica e profundo entendimento das dinâmicas de mercado para oferecer oportunidades de investimento excepcionais.</div>
+      <div class="ap-reveal" style="font-size:14.5px; line-height:1.8; color:#5B564A; max-width:500px;">Adotamos uma abordagem de parceria e transparência, com foco em ativos de histórico comprovado de performance — realizando o potencial máximo de cada investimento enquanto preservamos o capital de nossos parceiros.</div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,auto); gap:48px; margin-top:52px;">
+        <div class="ap-reveal">
+          <div data-counter data-target="15" data-suffix="%" style="font-family:'Newsreader',serif; font-size:38px; color:#12202C;">0</div>
+          <div style="font-size:11px; letter-spacing:1.5px; color:#8A8378; margin-top:4px;">RENTABILIDADE MÍN. A.A.</div>
+        </div>
+        <div class="ap-reveal">
+          <div data-counter data-target="3" style="font-family:'Newsreader',serif; font-size:38px; color:#12202C;">0</div>
+          <div style="font-size:11px; letter-spacing:1.5px; color:#8A8378; margin-top:4px;">TESES DE INVESTIMENTO</div>
+        </div>
+        <div class="ap-reveal">
+          <div style="font-family:'Newsreader',serif; font-size:38px; color:#12202C;">Longo</div>
+          <div style="font-size:11px; letter-spacing:1.5px; color:#8A8378; margin-top:4px;">HORIZONTE DE CAPITAL</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ap-reveal" style="position:relative;">
+      <image-slot id="quem-somos-foto" shape="rounded" radius="4" placeholder="Foto institucional / sede" style="width:100%; height:520px; display:block; background:#E4DFD3;"></image-slot>
+      <div style="position:absolute; left:-24px; bottom:-24px; width:120px; height:120px; border:1px solid #B08D57; z-index:-1;"></div>
+    </div>
+  </div>
+
+  <!-- ===================== TESE DE INVESTIMENTOS ===================== -->
+  <div id="tese" data-screen-label="Tese de Investimentos" style="position:relative; background:#12202C; padding:150px 64px;">
+    <div class="apGrain"></div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:64px; flex-wrap:wrap; gap:24px;">
+      <div>
+        <div class="ap-reveal" style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:18px;">TESE DE INVESTIMENTOS</div>
+        <div class="ap-reveal" style="font-family:'Newsreader',serif; font-size:clamp(28px,3.4vw,44px); color:#F4F1EA; max-width:680px; line-height:1.15;">Identificamos e exploramos oportunidades através de três teses principais.</div>
+      </div>
+      <div class="ap-reveal" style="font-size:14px; color:#8A9099; max-width:320px; line-height:1.7;">Prioritariamente minoritários, com monitoramento ativo e claras alavancas de criação de valor no small market.</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:#233240;">
+      <div class="apCard tese-card" data-hover="1" style="background:#12202C; border:1px solid #233240; padding:44px 36px; border-radius:2px;">
+        <div style="font-family:'Newsreader',serif; font-size:15px; color:#B08D57; margin-bottom:28px;">01</div>
+        <div style="font-family:'Newsreader',serif; font-size:23px; color:#F4F1EA; margin-bottom:14px;">Direito Creditório</div>
+        <div style="font-size:13.5px; line-height:1.75; color:#9DA5AC;">Geração de valor pela aquisição de carteiras de crédito desvalorizadas, mitigando riscos e otimizando a relação risco-retorno.</div>
+      </div>
+      <div class="apCard tese-card" data-hover="1" style="background:#12202C; border:1px solid #233240; padding:44px 36px; border-radius:2px;">
+        <div style="font-family:'Newsreader',serif; font-size:15px; color:#B08D57; margin-bottom:28px;">02</div>
+        <div style="font-family:'Newsreader',serif; font-size:23px; color:#F4F1EA; margin-bottom:14px;">Setor Imobiliário</div>
+        <div style="font-size:13.5px; line-height:1.75; color:#9DA5AC;">Captura do alto potencial de valorização em regiões com perspectivas de retorno significativo no longo prazo.</div>
+      </div>
+      <div class="apCard tese-card" data-hover="1" style="background:#12202C; border:1px solid #233240; padding:44px 36px; border-radius:2px;">
+        <div style="font-family:'Newsreader',serif; font-size:15px; color:#B08D57; margin-bottom:28px;">03</div>
+        <div style="font-family:'Newsreader',serif; font-size:23px; color:#F4F1EA; margin-bottom:14px;">Special Situations</div>
+        <div style="font-size:13.5px; line-height:1.75; color:#9DA5AC;">Aproveitamos a complexidade e a ineficiência do mercado para capitalizar distorções de preço com alto potencial de retorno.</div>
+      </div>
+    </div>
+
+    <!-- metodologia -->
+    <div style="margin-top:110px; display:grid; grid-template-columns:0.8fr 1.2fr; gap:64px; align-items:start;">
+      <div class="ap-reveal">
+        <div style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:18px;">NOSSA METODOLOGIA</div>
+        <div style="font-family:'Newsreader',serif; font-size:clamp(24px,2.6vw,34px); color:#F4F1EA; line-height:1.2;">Onde e como geramos valor.</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:0;">
+        <div class="ap-reveal method-row" style="display:grid; grid-template-columns:auto 1fr; gap:28px; padding:26px 0; border-top:1px solid #233240;">
+          <div style="font-family:'Newsreader',serif; font-size:15px; color:#B08D57;">i</div>
+          <div>
+            <div style="font-family:'Newsreader',serif; font-size:20px; color:#F4F1EA; margin-bottom:6px;">Retornos previsíveis</div>
+            <div style="font-size:13.5px; line-height:1.7; color:#9DA5AC; max-width:520px;">Aquisição de ativos estratégicos que garantam fluxos de caixa estáveis e previsíveis ao longo do tempo.</div>
+          </div>
+        </div>
+        <div class="ap-reveal method-row" style="display:grid; grid-template-columns:auto 1fr; gap:28px; padding:26px 0; border-top:1px solid #233240;">
+          <div style="font-family:'Newsreader',serif; font-size:15px; color:#B08D57;">ii</div>
+          <div>
+            <div style="font-family:'Newsreader',serif; font-size:20px; color:#F4F1EA; margin-bottom:6px;">Alto potencial de valorização</div>
+            <div style="font-size:13.5px; line-height:1.7; color:#9DA5AC; max-width:520px;">Posicionamento em oportunidades proprietárias com potencial de retorno significativo e exponencial.</div>
+          </div>
+        </div>
+        <div class="ap-reveal method-row" style="display:grid; grid-template-columns:auto 1fr; gap:28px; padding:26px 0; border-top:1px solid #233240; border-bottom:1px solid #233240;">
+          <div style="font-family:'Newsreader',serif; font-size:15px; color:#B08D57;">iii</div>
+          <div>
+            <div style="font-family:'Newsreader',serif; font-size:20px; color:#F4F1EA; margin-bottom:6px;">Capitalizando distorções</div>
+            <div style="font-size:13.5px; line-height:1.7; color:#9DA5AC; max-width:520px;">Aproveitamos ineficiências e complexidades do mercado para adquirir ativos de alto valor a preços atrativos.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- meta de rentabilidade banner -->
+    <div class="ap-reveal" style="margin-top:90px; border:1px solid rgba(176,141,87,0.35); border-radius:4px; padding:48px 56px; display:flex; align-items:center; justify-content:space-between; gap:40px; flex-wrap:wrap; background:linear-gradient(120deg, rgba(176,141,87,0.06), transparent);">
+      <div style="max-width:560px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:14px;">META DE RENTABILIDADE</div>
+        <div style="font-size:15px; line-height:1.75; color:#C7C2B6;">Entregar rentabilidade anual mínima de <strong style="color:#F4F1EA;">15% a.a.</strong>, por meio da seleção rigorosa e estratégica de ativos — garantindo a solidez para um crescimento sustentável e duradouro.</div>
+      </div>
+      <div style="text-align:right;">
+        <div data-counter data-target="15" data-suffix="%" style="font-family:'Newsreader',serif; font-size:clamp(56px,8vw,96px); color:#F4F1EA; line-height:1;">0</div>
+        <div style="font-size:12px; letter-spacing:2px; color:#B08D57; margin-top:4px;">AO ANO, NO MÍNIMO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ATIVOS + RISCOS ===================== -->
+  <div data-screen-label="Ativos e Riscos" style="position:relative; background:#0B141C; padding:150px 64px; display:grid; grid-template-columns:1fr 1fr; gap:80px;">
+    <div>
+      <div class="ap-reveal" style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:24px;">PRINCIPAIS ATIVOS</div>
+      <div class="ap-reveal asset-row" style="display:flex; justify-content:space-between; align-items:baseline; gap:20px; padding:22px 0; border-top:1px solid #1C2A34;">
+        <div style="font-family:'Newsreader',serif; font-size:22px; color:#F4F1EA;">Imobiliário</div>
+        <div style="font-size:13px; color:#8A9099; text-align:right;">Setor hoteleiro e residencial</div>
+      </div>
+      <div class="ap-reveal asset-row" style="display:flex; justify-content:space-between; align-items:baseline; gap:20px; padding:22px 0; border-top:1px solid #1C2A34;">
+        <div style="font-family:'Newsreader',serif; font-size:22px; color:#F4F1EA;">Direito Creditório</div>
+        <div style="font-size:13px; color:#8A9099; text-align:right;">Carteira de crédito e consignado público</div>
+      </div>
+      <div class="ap-reveal asset-row" style="display:flex; justify-content:space-between; align-items:baseline; gap:20px; padding:22px 0; border-top:1px solid #1C2A34; border-bottom:1px solid #1C2A34;">
+        <div style="font-family:'Newsreader',serif; font-size:22px; color:#F4F1EA;">Outros</div>
+        <div style="font-size:13px; color:#8A9099; text-align:right;">Special situations e renda variável</div>
+      </div>
+    </div>
+
+    <div class="ap-reveal" style="border-left:1px solid rgba(176,141,87,0.35); padding-left:44px;">
+      <div style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:20px;">GERENCIAMENTO DE RISCOS</div>
+      <div style="font-family:'Newsreader',serif; font-size:clamp(22px,2.4vw,30px); color:#F4F1EA; line-height:1.25; margin-bottom:22px;">O risco, para nós, é medido pelo potencial de perda permanente de capital.</div>
+      <div style="font-size:14.5px; line-height:1.8; color:#9DA5AC; max-width:460px;">A compreensão completa dos riscos de cada investimento é fundamental para o nosso processo. Realizamos apenas investimentos que atendam aos nossos rígidos critérios de risco-recompensa.</div>
+    </div>
+  </div>
+
+  <!-- ===================== CONTATO ===================== -->
+  <div id="contato" data-screen-label="Contato" style="position:relative; background:#F4F1EA; padding:150px 64px 80px; display:grid; grid-template-columns:1fr 1fr; gap:80px;">
+    <div>
+      <div class="ap-reveal" style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:18px;">CONTATO</div>
+      <div class="ap-reveal" style="font-family:'Newsreader',serif; font-size:clamp(28px,3.4vw,44px); color:#12202C; line-height:1.15; margin-bottom:24px;">Vamos conversar sobre o seu patrimônio.</div>
+      <div class="ap-reveal" style="font-size:15px; line-height:1.8; color:#5B564A; max-width:440px; margin-bottom:40px;">Atendimento dedicado ao público private, com relacionamento próximo, discrição e monitoramento ativo dos investimentos.</div>
+
+      <div class="ap-reveal" style="font-size:14px; line-height:2.1; color:#3A362F;">
+        <div>+55 11 4000-0000</div>
+        <div>contato@antonyparticipacoes.com.br</div>
+        <div>antonyparticipacoes.com.br</div>
+        <div style="color:#8A8378; margin-top:10px; font-size:12.5px;">CNPJ 49.458.111/0001-35</div>
+      </div>
+    </div>
+
+    <div class="ap-reveal">
+      <div class="apFieldLine" style="border-bottom:1px solid #C9C2B2; padding:14px 0; margin-bottom:8px;">
+        <input placeholder="Nome" style="width:100%; border:none; background:transparent; outline:none; font-family:'Manrope',sans-serif; font-size:15px; color:#12202C;"/>
+      </div>
+      <div class="apFieldLine" style="border-bottom:1px solid #C9C2B2; padding:14px 0; margin-bottom:8px;">
+        <input placeholder="E-mail" style="width:100%; border:none; background:transparent; outline:none; font-family:'Manrope',sans-serif; font-size:15px; color:#12202C;"/>
+      </div>
+      <div class="apFieldLine" style="border-bottom:1px solid #C9C2B2; padding:14px 0; margin-bottom:28px;">
+        <input placeholder="Mensagem" style="width:100%; border:none; background:transparent; outline:none; font-family:'Manrope',sans-serif; font-size:15px; color:#12202C;"/>
+      </div>
+      <div data-hover="1" data-magnetic="1" style="display:inline-block; background:#12202C; color:#F4F1EA; font-size:13px; font-weight:700; padding:15px 34px; border-radius:2px; cursor:pointer;">Solicitar contato</div>
+    </div>
+  </div>
+
+  <!-- ===================== FOOTER ===================== -->
+  <div style="background:#0B141C; padding:24px 64px; display:flex; justify-content:space-between; align-items:center;">
+    <div style="font-size:11px; color:#6E7680;">© 2026 Antony Participações · CNPJ 49.458.111/0001-35</div>
+    <div style="font-size:11px; color:#6E7680;">antonyparticipacoes.com.br</div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.rootRef = React.createRef();
+    this.cursorDotRef = React.createRef();
+    this.cursorRingRef = React.createRef();
+    this.navRef = React.createRef();
+    this.heroTextRef = React.createRef();
+    this.heroCtaRef = React.createRef();
+    this.heroImgWrapRef = React.createRef();
+    this.heroImgRef = React.createRef();
+    this.heroChipRef = React.createRef();
+  }
+
+  componentDidMount() {
+    const root = this.rootRef.current;
+    if (!root) return;
+
+    // ---- fallback: no GSAP (blocked CDN etc) — show final state, keep native cursor ----
+    if (!window.gsap || !window.ScrollTrigger) {
+      root.querySelectorAll('[data-counter]').forEach((el) => {
+        el.textContent = (el.getAttribute('data-target') || '0') + (el.getAttribute('data-suffix') || '');
+      });
+      root.querySelectorAll('.ap-reveal, .tese-card, .method-row, .asset-row, .apLineInner').forEach((el) => {
+        el.style.opacity = '1'; el.style.transform = 'none';
+      });
+      const introOverlay = document.getElementById('intro-overlay');
+      if (introOverlay) introOverlay.style.display = 'none';
+      const navLogo = document.getElementById('nav-logo');
+      if (navLogo) navLogo.style.opacity = '1';
+      const navLinks = document.getElementById('nav-links');
+      if (navLinks) navLinks.style.opacity = '1';
+      const navBtn = document.getElementById('nav-btn');
+      if (navBtn) navBtn.style.opacity = '1';
+      return;
+    }
+    gsap.registerPlugin(ScrollTrigger);
+    this._cleanups = [];
+
+    // ---- custom cursor ----
+    const dot = this.cursorDotRef.current;
+    const ring = this.cursorRingRef.current;
+    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (isFinePointer && dot && ring) {
+      root.classList.add('apCursorActive');
+      const dotX = gsap.quickTo(dot, 'x', { duration: 0.12, ease: 'power3' });
+      const dotY = gsap.quickTo(dot, 'y', { duration: 0.12, ease: 'power3' });
+      const ringX = gsap.quickTo(ring, 'x', { duration: 0.35, ease: 'power3' });
+      const ringY = gsap.quickTo(ring, 'y', { duration: 0.35, ease: 'power3' });
+      const move = (e) => { dotX(e.clientX); dotY(e.clientY); ringX(e.clientX); ringY(e.clientY); };
+      const onOver = (e) => {
+        const hoverable = e.target.closest && e.target.closest('[data-hover]');
+        gsap.to(ring, { scale: hoverable ? 1.8 : 1, borderColor: hoverable ? '#B08D57' : 'rgba(176,141,87,0.55)', duration: 0.3 });
+      };
+      window.addEventListener('mousemove', move);
+      window.addEventListener('mouseover', onOver);
+      this._cleanups.push(() => window.removeEventListener('mousemove', move));
+      this._cleanups.push(() => window.removeEventListener('mouseover', onOver));
+    } else {
+      if (dot) dot.style.display = 'none';
+      if (ring) ring.style.display = 'none';
+    }
+
+    // ---- magnetic buttons ----
+    root.querySelectorAll('[data-magnetic]').forEach((el) => {
+      const mx = gsap.quickTo(el, 'x', { duration: 0.4, ease: 'power3' });
+      const my = gsap.quickTo(el, 'y', { duration: 0.4, ease: 'power3' });
+      const onMove = (e) => {
+        const r = el.getBoundingClientRect();
+        mx((e.clientX - (r.left + r.width / 2)) * 0.35);
+        my((e.clientY - (r.top + r.height / 2)) * 0.35);
+      };
+      const onLeave = () => { mx(0); my(0); };
+      el.addEventListener('mousemove', onMove);
+      el.addEventListener('mouseleave', onLeave);
+      this._cleanups.push(() => { el.removeEventListener('mousemove', onMove); el.removeEventListener('mouseleave', onLeave); });
+    });
+
+    // ---- hero image mouse parallax ----
+    if (this.heroImgWrapRef.current && this.heroImgRef.current) {
+      const wrap = this.heroImgWrapRef.current;
+      const img = this.heroImgRef.current;
+      const chip = this.heroChipRef.current;
+      const ix = gsap.quickTo(img, 'x', { duration: 0.8, ease: 'power3' });
+      const iy = gsap.quickTo(img, 'y', { duration: 0.8, ease: 'power3' });
+      const onMove = (e) => {
+        const r = wrap.getBoundingClientRect();
+        const rx = (e.clientX - (r.left + r.width / 2)) / r.width;
+        const ry = (e.clientY - (r.top + r.height / 2)) / r.height;
+        ix(rx * 24); iy(ry * 24);
+        if (chip) gsap.to(chip, { x: rx * -16, y: ry * -16, duration: 0.8, ease: 'power3' });
+      };
+      window.addEventListener('mousemove', onMove);
+      this._cleanups.push(() => window.removeEventListener('mousemove', onMove));
+    }
+
+    this.ctx = gsap.context(() => {
+      // ---- nav background on scroll ----
+      if (this.navRef.current) {
+        ScrollTrigger.create({
+          start: 'top -60', end: 99999,
+          onUpdate: (self) => {
+            const on = self.scroll() > 60;
+            gsap.to(this.navRef.current, {
+              backgroundColor: on ? 'rgba(11,20,28,0.9)' : 'rgba(11,20,28,0)',
+              paddingTop: on ? 14 : 22, paddingBottom: on ? 14 : 22,
+              boxShadow: on ? '0 1px 0 rgba(255,255,255,0.06)' : '0 0 0 rgba(0,0,0,0)',
+              duration: 0.4
+            });
+          }
+        });
+      }
+
+      // ---- Intro Animation Sequence ----
+      const introOverlay = document.getElementById('intro-overlay');
+      const navLogo = document.getElementById('nav-logo');
+      const introLogo = document.getElementById('intro-logo');
+      
+      gsap.set(navLogo, { opacity: 0 });
+      gsap.set('#intro-text-antony', { textContent: "" });
+      gsap.set('#intro-text-part', { textContent: "", opacity: 0 });
+      gsap.set('#intro-separator', { scaleY: 0, opacity: 0 });
+
+      const tlIntro = gsap.timeline({
+        onComplete: () => {
+          transitionLogo();
+        }
+      });
+
+      // Step 1: Type "Antony"
+      const antonyText = "Antony";
+      const antonyObj = { count: 0 };
+      tlIntro.to(antonyObj, {
+        count: antonyText.length,
+        duration: 0.9,
+        ease: "power1.inOut",
+        onUpdate: () => {
+          const textAntony = document.getElementById('intro-text-antony');
+          if (textAntony) textAntony.textContent = antonyText.slice(0, Math.round(antonyObj.count));
+        }
+      });
+
+      // Step 2: Scale up and fade in the separator line
+      tlIntro.to('#intro-separator', {
+        opacity: 1,
+        scaleY: 1,
+        duration: 0.4,
+        ease: "back.out(1.5)"
+      }, "-=0.15");
+
+      // Step 3: Type "PARTICIPAÇÕES"
+      const partText = "PARTICIPAÇÕES";
+      const partObj = { count: 0 };
+      tlIntro.to(partObj, {
+        count: partText.length,
+        duration: 1.1,
+        ease: "power1.inOut",
+        onStart: () => {
+          gsap.set('#intro-text-part', { opacity: 1 });
+        },
+        onUpdate: () => {
+          const textPart = document.getElementById('intro-text-part');
+          if (textPart) textPart.textContent = partText.slice(0, Math.round(partObj.count));
+        }
+      });
+
+      // Step 4: Short pause at the center
+      tlIntro.to({}, { duration: 0.35 });
+
+      const transitionLogo = () => {
+        if (!navLogo || !introLogo || !introOverlay) {
+          showMainPage();
+          return;
+        }
+
+        gsap.set(navLogo, { opacity: 0 });
+        const navRect = navLogo.getBoundingClientRect();
+        const introRect = introLogo.getBoundingClientRect();
+
+        const deltaX = (navRect.left + navRect.width / 2) - (introRect.left + introRect.width / 2);
+        const deltaY = (navRect.top + navRect.height / 2) - (introRect.top + introRect.height / 2);
+
+        const targetScale = 20 / 54;
+
+        const tlTransition = gsap.timeline({
+          onComplete: () => {
+            gsap.set(navLogo, { opacity: 1 });
+            introOverlay.style.display = 'none';
+            showMainPage();
+          }
+        });
+
+        tlTransition.to(introLogo, {
+          x: deltaX,
+          y: deltaY,
+          scale: targetScale,
+          duration: 1.0,
+          ease: "expo.inOut"
+        });
+
+        tlTransition.to(introOverlay, {
+          opacity: 0,
+          duration: 0.7,
+          ease: "power2.out"
+        }, "-=0.55");
+      };
+
+      const showMainPage = () => {
+        gsap.to('#nav-links', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' });
+        gsap.to('#nav-btn', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' });
+        gsap.to('.cursor-dot, .cursor-ring', { opacity: 0.9, duration: 0.5 });
+
+        // ---- hero entrance ----
+        gsap.set('.apLineInner', { yPercent: 115, opacity: 0 });
+        const tl = gsap.timeline({ delay: 0.05 });
+        tl.to('.apLineInner', { yPercent: 0, opacity: 1, duration: 1.1, ease: 'expo.out', stagger: 0.07 });
+        if (this.heroCtaRef.current) tl.from(this.heroCtaRef.current.children, { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out', stagger: 0.1 }, '-=0.5');
+        if (this.heroImgWrapRef.current) tl.from(this.heroImgWrapRef.current, { scale: 0.9, opacity: 0, duration: 1.2, ease: 'expo.out' }, '-=1.0');
+        if (this.heroChipRef.current) tl.from(this.heroChipRef.current, { y: 24, opacity: 0, duration: 0.7, ease: 'back.out(1.6)' }, '-=0.4');
+      };
+
+      // ---- hero image scroll parallax ----
+      if (this.heroImgRef.current) {
+        gsap.to(this.heroImgRef.current, {
+          yPercent: 18, ease: 'none',
+          scrollTrigger: { trigger: this.heroImgRef.current, start: 'top top', end: 'bottom top', scrub: true }
+        });
+      }
+
+      // ---- reveals ----
+      root.querySelectorAll('.ap-reveal').forEach((el) => {
+        gsap.from(el, { y: 36, opacity: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%' } });
+      });
+      gsap.from('.tese-card', { y: 48, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.15, scrollTrigger: { trigger: '#tese', start: 'top 68%' } });
+      gsap.utils.toArray('.method-row').forEach((el) => {
+        gsap.from(el, { x: 30, opacity: 0, duration: 0.8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%' } });
+      });
+      gsap.utils.toArray('.asset-row').forEach((el) => {
+        gsap.from(el, { x: -24, opacity: 0, duration: 0.8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 92%' } });
+      });
+
+      // ---- counters ----
+      root.querySelectorAll('[data-counter]').forEach((el) => {
+        const target = parseFloat(el.getAttribute('data-target')) || 0;
+        const suffix = el.getAttribute('data-suffix') || '';
+        const obj = { val: 0 };
+        gsap.to(obj, {
+          val: target, duration: 1.6, ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 92%' },
+          onUpdate: () => { el.textContent = Math.round(obj.val) + suffix; }
+        });
+      });
+    }, root);
+  }
+
+  componentWillUnmount() {
+    if (this.ctx) this.ctx.revert();
+    if (this._cleanups) this._cleanups.forEach((fn) => fn());
+    if (window.ScrollTrigger) ScrollTrigger.getAll().forEach((t) => t.kill());
+  }
+
+  scrollToId(id) {
+    const el = document.getElementById(id);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
+  }
+
+  renderVals() {
+    return {
+      rootRef: this.rootRef,
+      cursorDotRef: this.cursorDotRef,
+      cursorRingRef: this.cursorRingRef,
+      navRef: this.navRef,
+      heroTextRef: this.heroTextRef,
+      heroCtaRef: this.heroCtaRef,
+      heroImgWrapRef: this.heroImgWrapRef,
+      heroImgRef: this.heroImgRef,
+      heroChipRef: this.heroChipRef,
+      scrollToId: (id) => this.scrollToId(id)
+    };
+  }
+}
+</script>
+</body>
+</html>

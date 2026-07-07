@@ -70,6 +70,7 @@
     <div id="nav-links" style="display:flex; gap:44px; font-size:12.5px; font-weight:600; color:#D9D4C8; opacity:0; will-change: opacity;">
       <div class="apNavLink" data-hover="1" onClick="{{ scrollToQuemSomos }}" style="cursor:pointer;">Quem Somos</div>
       <div class="apNavLink" data-hover="1" onClick="{{ scrollToTese }}" style="cursor:pointer;">Tese de Investimentos</div>
+      <div class="apNavLink" data-hover="1" onClick="{{ scrollToPortfolio }}" style="cursor:pointer;">Portfólio</div>
       <div class="apNavLink" data-hover="1" onClick="{{ scrollToContato }}" style="cursor:pointer;">Contato</div>
     </div>
     <div id="nav-btn" data-hover="1" data-magnetic="1" onClick="{{ scrollToContato }}" style="background:#B08D57; color:#0B141C; font-size:12px; font-weight:700; padding:11px 24px; border-radius:2px; cursor:pointer; opacity:0; will-change: opacity;">Área Private</div>
@@ -253,8 +254,24 @@
     </div>
   </div>
 
-  <!-- ===================== ATIVOS + RISCOS ===================== -->
-  <div data-screen-label="Ativos e Riscos" style="position:relative; background:#0B141C; padding:150px 64px; display:grid; grid-template-columns:1fr 1fr; gap:80px;">
+  <!-- ===================== PORTFÓLIO ===================== -->
+  <div id="portfolio" data-screen-label="Portfólio" style="position:relative; background:#0B141C; padding:150px 64px;">
+    <div class="apGrain"></div>
+
+    <div style="max-width:820px; margin-bottom:64px;">
+      <div class="ap-reveal" style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:18px;">PORTFÓLIO</div>
+      <div class="ap-reveal" style="font-family:'Newsreader',serif; font-size:clamp(28px,3.4vw,44px); color:#F4F1EA; line-height:1.15; margin-bottom:26px;">Investimentos e participações em ativos que geram valor.</div>
+      <div class="ap-reveal" style="font-size:14.5px; line-height:1.8; color:#9DA5AC; max-width:700px;">A estratégia da Antony Participações está focada em reconhecer o potencial de empresas e geografias, aproveitando profunda experiência, relacionamentos de longa data e extensas redes em mercados que conhece bem. Estamos abertos a investimentos de controle e minoritários, sempre que há oportunidades claras de geração e agregação de valor — por isso, nossos investimentos são prioritariamente minoritários, com monitoramento ativo, alavancas de criação de valor bem definidas e foco no small market, em empresas com potencial de crescimento.</div>
+    </div>
+
+    <div class="ap-reveal" style="border:1px solid rgba(176,141,87,0.35); border-radius:4px; padding:44px 52px; margin-bottom:100px; display:flex; align-items:center; gap:40px; flex-wrap:wrap; background:linear-gradient(120deg, rgba(176,141,87,0.06), transparent);">
+      <div style="max-width:760px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:14px;">ABORDAGEM DE PARCERIA</div>
+        <div style="font-size:15px; line-height:1.8; color:#C7C2B6;">Adotamos uma abordagem de <em style="font-style:italic; color:#F4F1EA;">"parceria"</em> para investir e buscamos apoiar equipes de gestão empreendedoras a consolidar ou alcançar posições de liderança no setor de seus negócios. Nosso principal objetivo é a valorização de capital de longo prazo, desenvolvendo uma carteira diversificada de investimentos em nossos principais mercados geográficos.</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:80px;">
     <div>
       <div class="ap-reveal" style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:24px;">PRINCIPAIS ATIVOS</div>
       <div class="ap-reveal asset-row" style="display:flex; justify-content:space-between; align-items:baseline; gap:20px; padding:22px 0; border-top:1px solid #1C2A34;">
@@ -275,6 +292,7 @@
       <div style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:20px;">GERENCIAMENTO DE RISCOS</div>
       <div style="font-family:'Newsreader',serif; font-size:clamp(22px,2.4vw,30px); color:#F4F1EA; line-height:1.25; margin-bottom:22px;">O risco, para nós, é medido pelo potencial de perda permanente de capital.</div>
       <div style="font-size:14.5px; line-height:1.8; color:#9DA5AC; max-width:460px;">A compreensão completa dos riscos de cada investimento é fundamental para o nosso processo. Realizamos apenas investimentos que atendam aos nossos rígidos critérios de risco-recompensa.</div>
+    </div>
     </div>
   </div>
 
@@ -613,6 +631,7 @@ class Component extends DCLogic {
       scrollToId: (id) => this.scrollToId(id),
       scrollToQuemSomos: () => this.scrollToId('quem-somos'),
       scrollToTese: () => this.scrollToId('tese'),
+      scrollToPortfolio: () => this.scrollToId('portfolio'),
       scrollToContato: () => this.scrollToId('contato')
     };
   }

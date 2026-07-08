@@ -621,7 +621,7 @@
               Onde e como geramos valor.</div>
           </div>
           <div style="display:flex; flex-direction:column; gap:0;">
-            <div class="ap-reveal method-row"
+            <div class="method-row"
               style="display:grid; grid-template-columns:auto 1fr; gap:28px; padding:26px 0; border-top:1px solid #233240;">
               <div style="font-family:'Newsreader',serif; font-size:15px; color:#B08D57;">i</div>
               <div>
@@ -631,7 +631,7 @@
                   estratégicos que garantam fluxos de caixa estáveis e previsíveis ao longo do tempo.</div>
               </div>
             </div>
-            <div class="ap-reveal method-row"
+            <div class="method-row"
               style="display:grid; grid-template-columns:auto 1fr; gap:28px; padding:26px 0; border-top:1px solid #233240;">
               <div style="font-family:'Newsreader',serif; font-size:15px; color:#B08D57;">ii</div>
               <div>
@@ -641,7 +641,7 @@
                   oportunidades proprietárias com potencial de retorno significativo e exponencial.</div>
               </div>
             </div>
-            <div class="ap-reveal method-row"
+            <div class="method-row"
               style="display:grid; grid-template-columns:auto 1fr; gap:28px; padding:26px 0; border-top:1px solid #233240; border-bottom:1px solid #233240;">
               <div style="font-family:'Newsreader',serif; font-size:15px; color:#B08D57;">iii</div>
               <div>
@@ -712,18 +712,18 @@
             <div class="ap-reveal"
               style="font-size:11px; font-weight:700; letter-spacing:3px; color:#B08D57; margin-bottom:24px;">PRINCIPAIS
               ATIVOS</div>
-            <div class="ap-reveal asset-row"
+            <div class="asset-row"
               style="display:flex; justify-content:space-between; align-items:baseline; gap:20px; padding:22px 0; border-top:1px solid #1C2A34;">
               <div style="font-family:'Newsreader',serif; font-size:22px; color:#F4F1EA;">Imobiliário</div>
               <div style="font-size:13px; color:#8A9099; text-align:right;">Setor hoteleiro e residencial</div>
             </div>
-            <div class="ap-reveal asset-row"
+            <div class="asset-row"
               style="display:flex; justify-content:space-between; align-items:baseline; gap:20px; padding:22px 0; border-top:1px solid #1C2A34;">
               <div style="font-family:'Newsreader',serif; font-size:22px; color:#F4F1EA;">Direito Creditório</div>
               <div style="font-size:13px; color:#8A9099; text-align:right;">Carteira de crédito e consignado público
               </div>
             </div>
-            <div class="ap-reveal asset-row"
+            <div class="asset-row"
               style="display:flex; justify-content:space-between; align-items:baseline; gap:20px; padding:22px 0; border-top:1px solid #1C2A34; border-bottom:1px solid #1C2A34;">
               <div style="font-family:'Newsreader',serif; font-size:22px; color:#F4F1EA;">Outros</div>
               <div style="font-size:13px; color:#8A9099; text-align:right;">Special situations e renda variável</div>
@@ -1066,17 +1066,40 @@ class Component extends DCLogic {
         });
       }
 
-      // ---- reveals ----
+      // ---- reveals: one coherent system, each group keyed off its own container ----
+      const REVEAL_START = 'top 85%';
+      const REVEAL_EASE = 'expo.out';
+
       root.querySelectorAll('.ap-reveal').forEach((el) => {
-        gsap.from(el, { y: 36, opacity: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%' } });
+        gsap.from(el, {
+          y: 26, opacity: 0, scale: 0.985, duration: 1, ease: REVEAL_EASE,
+          scrollTrigger: { trigger: el, start: REVEAL_START, once: true }
+        });
       });
-      gsap.from('.tese-card', { y: 48, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.15, scrollTrigger: { trigger: '#tese', start: 'top 68%' } });
-      gsap.utils.toArray('.method-row').forEach((el) => {
-        gsap.from(el, { x: 30, opacity: 0, duration: 0.8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%' } });
-      });
-      gsap.utils.toArray('.asset-row').forEach((el) => {
-        gsap.from(el, { x: -24, opacity: 0, duration: 0.8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 92%' } });
-      });
+
+      const teseCardsGrid = root.querySelector('#tese .apGrid3');
+      if (teseCardsGrid) {
+        gsap.from('.tese-card', {
+          y: 40, opacity: 0, scale: 0.98, duration: 0.9, ease: REVEAL_EASE, stagger: 0.12,
+          scrollTrigger: { trigger: teseCardsGrid, start: REVEAL_START, once: true }
+        });
+      }
+
+      const methodList = root.querySelector('#tese .apMethGrid > div:last-child');
+      if (methodList) {
+        gsap.from('.method-row', {
+          x: 26, opacity: 0, duration: 0.85, ease: REVEAL_EASE, stagger: 0.12,
+          scrollTrigger: { trigger: methodList, start: REVEAL_START, once: true }
+        });
+      }
+
+      const assetList = root.querySelector('#portfolio .apGrid2 > div:first-child');
+      if (assetList) {
+        gsap.from('.asset-row', {
+          x: -26, opacity: 0, duration: 0.85, ease: REVEAL_EASE, stagger: 0.12,
+          scrollTrigger: { trigger: assetList, start: REVEAL_START, once: true }
+        });
+      }
 
       // ---- counters ----
       root.querySelectorAll('[data-counter]').forEach((el) => {
@@ -1090,6 +1113,14 @@ class Component extends DCLogic {
         });
       });
     }, root);
+
+    // ---- keep scroll-trigger positions honest once web fonts / late layout settle ----
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => ScrollTrigger.refresh());
+    }
+    const onWindowLoad = () => ScrollTrigger.refresh();
+    window.addEventListener('load', onWindowLoad);
+    this._cleanups.push(() => window.removeEventListener('load', onWindowLoad));
   }
 
   componentWillUnmount() {

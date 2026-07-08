@@ -278,6 +278,25 @@
 
           .apHero {
             padding: 120px 20px 0 !important;
+            min-height: 100vh !important;
+            min-height: 100svh !important;
+          }
+
+          #intro-logo {
+            gap: 12px !important;
+          }
+
+          #intro-text-antony {
+            font-size: 32px !important;
+          }
+
+          #intro-separator {
+            height: 20px !important;
+          }
+
+          #intro-text-part {
+            font-size: 13px !important;
+            letter-spacing: 3px !important;
           }
 
           .apStatsGrid {
@@ -980,7 +999,9 @@ class Component extends DCLogic {
         const deltaX = (navRect.left + navRect.width / 2) - (introRect.left + introRect.width / 2);
         const deltaY = (navRect.top + navRect.height / 2) - (introRect.top + introRect.height / 2);
 
-        const targetScale = 20 / 54;
+        const introFontSize = parseFloat(getComputedStyle(document.getElementById('intro-text-antony')).fontSize) || 54;
+        const navFontSize = parseFloat(getComputedStyle(navLogo.querySelector('span')).fontSize) || 20;
+        const targetScale = navFontSize / introFontSize;
 
         const tlTransition = gsap.timeline({
           onComplete: () => {
